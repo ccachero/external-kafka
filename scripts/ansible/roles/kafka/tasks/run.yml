@@ -1,0 +1,9 @@
+- name: Run zookeeper server
+  shell: nohup bin/zookeeper-server-start.sh -daemon config/zookeeper.properties &
+  args: 
+    chdir: /opt/kafka/
+
+- name: Run Kafka server
+  shell: nohup bin/kafka-server-start.sh -daemon config/server.properties & 
+  args: 
+    chdir: /opt/kafka/

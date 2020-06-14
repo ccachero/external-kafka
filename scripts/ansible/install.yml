@@ -1,0 +1,10 @@
+- hosts: kafka-hosts
+  become: yes
+  become_user: root
+
+  tasks:
+  - include: "roles/kafka/tasks/install.yml"
+    when:  run_option == "install"
+
+  - include: "roles/kafka/tasks/run.yml"
+    when:  run_option == "run"

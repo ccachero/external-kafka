@@ -1,0 +1,5 @@
+- name: Replace zookeeper port in zookeeper.properties
+  replace:
+    path: "{{ playbook_dir }}/hosts"
+    regexp: 'hostname'
+    replace: '{{ host }}'

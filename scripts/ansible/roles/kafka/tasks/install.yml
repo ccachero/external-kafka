@@ -1,0 +1,78 @@
+- name: install Java 8
+  yum:
+    name: java-1.8.0-openjdk.x86_64
+    state: present
+
+- name: add java environment variables to /etc/profile
+  lineinfile:
+      path: /etc/profile
+      line: export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
+
+- name: add java environment variables to /etc/profile
+  lineinfile:
+      path: /etc/profile
+      line: export JRE_HOME=/usr/lib/jvm/jre
+
+- name: Reload profile
+  shell: source /etc/profile
+
+- name: install wget
+  yum:
+    name: wget
+    state: latest
+
+- name: download Kafka package
+  get_url:
+    url: https://archive.apache.org/dist/kafka/2.1.0/kafka_2.12-2.1.0.tgz
+    dest: ~/
+
+- name: untar kafka package
+  shell: tar xvf ~/kafka_2.12-2.1.0.tgz
+
+- name: move kafka to /opt/ directory
+  shell: mv kafka_2.12-2.1.0 /opt/kafka
+
+- name: Replace zookeeper port in zookeeper.properties
+  replace:
+    path: /opt/kafka/config/zookeeper.properties
+    regexp: '2181'
+    replace: '5181'
+
+- name: Replace zookeeper port in server.properties
+  replace:
+    path: /opt/kafka/config/server.properties
+    regexp: '2181'
+    replace: '5181'
+
+- name: Add ssl properties to server.properties
+  blockinfile:
+    path: /opt/kafka/config/server.properties
+    block: |
+        ssl.endpoint.identification.algorithm=HTTPS
+        ssl.keystore.type=JKS
+        ssl.truststore.type=JKS
+        ssl.keystore.location=/opt/kafka/config/ssl_keystore
+        ssl.keystore.password=mapr123
+        ssl.truststore.location=/opt/kafka/config/ssl_truststore
+        ssl.truststore.password=mapr123
+        ssl.key.password=mapr123
+        ssl.client.auth=requested
+        auto.create.topics.enable=false
+        ssl.cipher.suites=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+        ssl.enabled.protocols=TLSv1.2,TLSv1.1,TLSv1
+        ssl.secure.random.implementation=SHA1PRNG
+        security.inter.broker.protocol=SSL
+        listeners=SSL://0.0.0.0:9092
+        advertised.listeners=SSL://{{inventory_hostname}}:9092
+
+- name: Copy truststore 
+  copy:
+    src: ~/.ssh/ssl_truststore
+    dest: /opt/kafka/config/ssl_truststore
+    mode: '600'
+
+- name: Copy keystore 
+  copy:
+    src: ~/.ssh/ssl_keystore
+    dest: /opt/kafka/config/ssl_keystore
+    mode: '600'

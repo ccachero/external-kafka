@@ -1,0 +1,2 @@
+[kafka-hosts]
+hostname ansible_ssh_private_key_file=~/.ssh/ITRS_MNL_ENG.pem ansible_user=ec2-user

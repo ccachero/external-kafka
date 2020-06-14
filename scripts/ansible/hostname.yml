@@ -1,0 +1,6 @@
+- hosts: localhost
+
+  tasks:
+    - include: "roles/host/tasks/sethostname.yml"
+      vars:
+        host: "{{ hostname }}"
